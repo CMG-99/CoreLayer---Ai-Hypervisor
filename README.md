@@ -1,5 +1,5 @@
 # CoreLayer---Ai-Hypervisor
-This is a specially desined Hyper-V Integration Tool that allows for Ai Automation of Hyper-V System Managment to help keep On-Premise Businesses up to date and relevant to keep personal data in-house
+This is a specially designed Hyper-V Integration Tool that allows for Ai Automation of Hyper-V System Managment to help keep On-Premise Businesses up to date and relevant to keep personal data in-house
 
 <img width="1536" height="1024" alt="LoadImage" src="https://github.com/user-attachments/assets/c7cc0204-fdb4-4e87-b811-45230da661e0" />
 
