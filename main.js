@@ -1,3 +1,10 @@
+/*
+ * © 2026 CoreLayer
+ * All Rights Reserved.
+ *
+ * Unauthorized copying, modification, or use is prohibited.
+ */
+
 const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
