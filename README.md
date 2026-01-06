@@ -36,22 +36,36 @@ const jsonMatch = jsonStr.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
 - Added double-click functionality to connect to VMs directly
 - Improved VMConnect integration
 
-## SCREENSHOTS ##
+## 📸 SCREENSHOTS ## 
+
+# Dashboard #
 <img width="2068" height="1506" alt="Dashboard" src="https://github.com/user-attachments/assets/0c6b615e-d8d0-471f-9f6a-0b3c17ed3783" />
 
+---
+# Ai Chat Deployment #
 <img width="2066" height="1506" alt="AI Chat Deployment" src="https://github.com/user-attachments/assets/5d2b806a-8928-4921-8f64-09fa227c22df" />
 
+---
+# Running VMs #
 <img width="2066" height="1506" alt="Running VM" src="https://github.com/user-attachments/assets/071814cd-7384-48ca-832b-37bca1473a8c" />
 
+---
+# ISO Library #
 <img width="2070" height="1510" alt="ISO Library" src="https://github.com/user-attachments/assets/e2fe3468-d523-4769-969d-c32856999836" />
 
+---
+# Disk Management #
 <img width="2075" height="1512" alt="Disk Management" src="https://github.com/user-attachments/assets/d130c40f-4426-4cd0-a1d5-39dd28fdeb2d" />
 
 <img width="1699" height="1109" alt="SAN Storage" src="https://github.com/user-attachments/assets/3516505d-a7ae-4bd9-953c-051bf8528a2a" />
 
+---
+# Cluster Management #
 <img width="2070" height="1340" alt="Cluster managment" src="https://github.com/user-attachments/assets/d33c2d02-46dd-4c97-ba3e-a1b7c3d2944e" />
 
 <img width="2066" height="1403" alt="Hostname" src="https://github.com/user-attachments/assets/8efc2c04-7293-43ef-a9d7-e10a1367cf3b" />
+
+---
 
 ## 📦 NEW STORAGE MANAGEMENT FEATURES
 
