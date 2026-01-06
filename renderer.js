@@ -2,8 +2,11 @@
  * © 2026 CoreLayer
  * All Rights Reserved.
  *
- * Unauthorized copying, modification, or use is prohibited.
+ * This source code is provided for evaluation purposes only.
+ * Copying, modification, redistribution, or commercial use
+ * is strictly prohibited without prior written permission.
  */
+
 
 /**
  * CoreLayer AI HyperVisor - Renderer Process
