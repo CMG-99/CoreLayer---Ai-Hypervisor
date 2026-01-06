@@ -53,6 +53,7 @@ const jsonMatch = jsonStr.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
 ---
 # Running VMs #
 <img width="2066" height="1506" alt="Running VM" src="https://github.com/user-attachments/assets/071814cd-7384-48ca-832b-37bca1473a8c" />
+<img width="2073" height="1235" alt="VM Live" src="https://github.com/user-attachments/assets/80c2a84b-3280-4f20-bb7c-18f5bbb34f41" />
 
 ---
 # ISO Library #
