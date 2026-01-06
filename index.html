@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Security: Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        font-src 'self';
+        connect-src 'self' http://localhost:11434;
+        frame-src 'none';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+    
+    <!-- Security: Prevent MIME type sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    
+    <!-- Security: XSS Protection -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    
+    <!-- Security: Referrer Policy -->
+    <meta name="referrer" content="no-referrer">
+    
+    <title>CoreLayer AI HyperVisor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-toggle">
+                <button id="toggleSidebar" class="toggle-btn">☰</button>
+            </div>
+            <div class="sidebar-buttons" id="sidebarButtons">
+                <button class="sidebar-btn" data-view="dashboard">
+                    <span class="btn-icon">🏠</span>
+                    <span class="btn-text">Dashboard</span>
+                </button>
+                <button class="sidebar-btn" data-view="vms">
+                    <span class="btn-icon">🖥</span>
+                    <span class="btn-text">VMs</span>
+                </button>
+                <button class="sidebar-btn" data-view="storage">
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text">Storage</span>
+                </button>
+                <button class="sidebar-btn" data-view="ai">
+                    <span class="btn-icon">⚡</span>
+                    <span class="btn-text">AI Assistant</span>
+                </button>
+                <button class="sidebar-btn" data-view="clustering">
+                    <span class="btn-icon">🔗</span>
+                    <span class="btn-text">Clustering</span>
+                </button>
+                <button class="sidebar-btn" data-view="settings">
+                    <span class="btn-icon">⚙️</span>
+                    <span class="btn-text">Settings</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-area">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-title" id="headerTitle">Dashboard</div>
+                <div class="header-status" id="headerStatus">Ready</div>
+            </div>
+
+            <!-- Content Stack -->
+            <div class="content-stack">
+                <!-- Dashboard View -->
+                <div class="content-view" id="dashboardView">
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" data-action="create-vm">➕ Create VM</button>
+                            <button class="action-btn" data-action="manage-vms">🖥 Manage VMs</button>
+                            <button class="action-btn" data-action="storage">💾 Storage</button>
+                            <button class="action-btn" data-action="ai-assistant">⚡ AI Assistant</button>
+                            <button class="action-btn" data-action="clustering">🔗 Clustering</button>
+                        </div>
+                    </div>
+
+                    <!-- Performance Graphs -->
+                    <div class="graphs-container">
+                        <div class="graph-row">
+                            <div class="graph-widget" id="cpuGraph">
+                                <div class="graph-header">
+                                    <span class="graph-title">CPU Usage</span>
+                                    <span class="graph-value" id="cpuValue">0.0 %</span>
+                                </div>
+                                <canvas class="graph-canvas" id="cpuCanvas"></canvas>
+                            </div>
+                            <div class="graph-widget" id="memGraph">
+                                <div class="graph-header">
+                                    <span class="graph-title">Memory Usage</span>
+                                    <span class="graph-value" id="memValue">0.0 %</span>
+                                </div>
+                                <canvas class="graph-canvas" id="memCanvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="graph-row">
+                            <div class="graph-widget" id="diskGraph">
+                                <div class="graph-header">
+                                    <span class="graph-title">Disk Usage</span>
+                                    <span class="graph-value" id="diskValue">0.0 %</span>
+                                </div>
+                                <canvas class="graph-canvas" id="diskCanvas"></canvas>
+                            </div>
+                            <div class="graph-widget" id="netGraph">
+                                <div class="graph-header">
+                                    <span class="graph-title">Network I/O</span>
+                                    <span class="graph-value" id="netValue">0.0 MB/s</span>
+                                </div>
+                                <canvas class="graph-canvas" id="netCanvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VMs View -->
+                <div class="content-view hidden" id="vmsView">
+                    <div class="vm-toolbar">
+                        <button class="toolbar-btn" id="createVMBtn">➕ Create VM</button>
+                        <button class="toolbar-btn" id="startVMBtn">▶ Start</button>
+                        <button class="toolbar-btn" id="consoleVMBtn">💻 Console</button>
+
+                        <!-- NEW: Graceful shutdown -->
+                        <button class="toolbar-btn" id="shutdownVMBtn">
+                            ⏻ Shut down
+                        </button>
+
+                        <!-- NEW: Forced power off -->
+                        <button class="toolbar-btn danger" id="turnOffVMBtn">
+                            ⛔ Turn off
+                        </button>
+
+                        <button class="toolbar-btn" id="editVMBtn">✏ Edit</button>
+                        <button class="toolbar-btn" id="deleteVMBtn">🗑 Delete</button>
+                        <button class="toolbar-btn" id="snapshotVMBtn">📸 Snapshots</button>
+                        <button class="toolbar-btn" id="refreshVMBtn">🔄 Refresh</button>
+                    </div>
+
+                    <div class="vm-list-container">
+                        <table class="vm-table" id="vmTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>State</th>
+                                    <th>CPUs</th>
+                                    <th>Memory (MB)</th>
+                                    <th>Uptime</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vmTableBody">
+                                <!-- VM rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Storage View -->
+                <div class="content-view hidden" id="storageView">
+                    <!-- Main Storage Category Tabs -->
+                    <div class="storage-category-tabs">
+                        <button class="storage-category-tab active" data-category="host">🖥 Host Storage</button>
+                        <button class="storage-category-tab" data-category="hyperv">🔷 Hyper-V Storage</button>
+                    </div>
+
+                    <!-- Host Storage Section -->
+                    <div class="storage-category-content" id="hostStorageContent">
+                        <div class="storage-tabs">
+                            <button class="storage-tab active" data-tab="physical">Physical Disks</button>
+                            <button class="storage-tab" data-tab="san">SAN Storage</button>
+                            <button class="storage-tab" data-tab="pools">Storage Pools</button>
+                            <button class="storage-tab" data-tab="volumes">Volumes</button>
+                        </div>
+
+                        <!-- Physical Disks Tab -->
+                        <div class="storage-tab-content" id="physicalTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="refreshDisksBtn">🔄 Refresh</button>
+                                <button class="toolbar-btn" id="diskDetailsBtn">📊 Details</button>
+                                <button class="toolbar-btn" id="optimizeBtn">⚡ Optimize</button>
+                                <button class="toolbar-btn" id="diskHealthBtn">🏥 Health Check</button>
+                            </div>
+                            <div class="disk-list-container">
+                                <div id="physicalDisksList" class="disk-cards">
+                                    <!-- Physical disks will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SAN Storage Tab -->
+                        <div class="storage-tab-content hidden" id="sanTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="refreshSANBtn">🔄 Refresh</button>
+                                <button class="toolbar-btn" id="discoverSANBtn">🔍 Discover</button>
+                                <button class="toolbar-btn" id="sanPathsBtn">🛤 Paths</button>
+                                <button class="toolbar-btn" id="sanHealthBtn">🏥 Health</button>
+                            </div>
+                            <div class="san-overview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                                <div class="san-stat-card" style="background: linear-gradient(135deg, #1a1f26 0%, #0f1419 100%); padding: 16px; border-radius: 12px; border: 1px solid rgba(0,217,255,0.2);">
+                                    <div style="font-size: 12px; color: #888; text-transform: uppercase;">iSCSI Targets</div>
+                                    <div id="sanIscsiCount" style="font-size: 28px; font-weight: 600; color: #00d9ff;">--</div>
+                                </div>
+                                <div class="san-stat-card" style="background: linear-gradient(135deg, #1a1f26 0%, #0f1419 100%); padding: 16px; border-radius: 12px; border: 1px solid rgba(0,217,255,0.2);">
+                                    <div style="font-size: 12px; color: #888; text-transform: uppercase;">Fibre Channel</div>
+                                    <div id="sanFcCount" style="font-size: 28px; font-weight: 600; color: #00d9ff;">--</div>
+                                </div>
+                                <div class="san-stat-card" style="background: linear-gradient(135deg, #1a1f26 0%, #0f1419 100%); padding: 16px; border-radius: 12px; border: 1px solid rgba(0,217,255,0.2);">
+                                    <div style="font-size: 12px; color: #888; text-transform: uppercase;">Total LUNs</div>
+                                    <div id="sanLunCount" style="font-size: 28px; font-weight: 600; color: #00d9ff;">--</div>
+                                </div>
+                                <div class="san-stat-card" style="background: linear-gradient(135deg, #1a1f26 0%, #0f1419 100%); padding: 16px; border-radius: 12px; border: 1px solid rgba(0,217,255,0.2);">
+                                    <div style="font-size: 12px; color: #888; text-transform: uppercase;">MPIO Paths</div>
+                                    <div id="sanMpioCount" style="font-size: 28px; font-weight: 600; color: #00d9ff;">--</div>
+                                </div>
+                            </div>
+                            <div class="san-storage-container" id="sanStorageList" style="background: #0f1419; border-radius: 12px; padding: 16px;">
+                                <div style="color: #666; text-align: center; padding: 40px;">Click Refresh to scan for SAN storage devices...</div>
+                            </div>
+                        </div>
+
+                        <!-- Storage Pools Tab -->
+                        <div class="storage-tab-content hidden" id="poolsTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="createPoolBtn">➕ Create Pool</button>
+                                <button class="toolbar-btn" id="addDiskToPoolBtn">💾 Add Disk</button>
+                                <button class="toolbar-btn" id="removeFromPoolBtn">❌ Remove Disk</button>
+                                <button class="toolbar-btn" id="refreshPoolsBtn">🔄 Refresh</button>
+                            </div>
+                            <div class="pools-container" id="storagePoolsList">
+                                <!-- Storage pools will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Volumes Tab -->
+                        <div class="storage-tab-content hidden" id="volumesTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="newVolumeBtn">➕ New Volume</button>
+                                <button class="toolbar-btn" id="resizeVolumeBtn">📏 Resize</button>
+                                <button class="toolbar-btn" id="formatVolumeBtn">💿 Format</button>
+                                <button class="toolbar-btn" id="refreshVolumesBtn">🔄 Refresh</button>
+                            </div>
+                            <div class="volumes-container" id="volumesList">
+                                <!-- Volumes will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hyper-V Storage Section -->
+                    <div class="storage-category-content hidden" id="hypervStorageContent">
+                        <div class="storage-tabs">
+                            <button class="storage-tab active" data-tab="vhds">Virtual Disks</button>
+                            <button class="storage-tab" data-tab="vmstores">VM Stores</button>
+                            <button class="storage-tab" data-tab="checkpoints">Checkpoints</button>
+                            <button class="storage-tab" data-tab="iso">ISO Library</button>
+                            <button class="storage-tab" data-tab="qos">Storage QoS</button>
+                        </div>
+
+                        <!-- Virtual Disks Tab -->
+                        <div class="storage-tab-content" id="vhdsTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="createVHDBtn">➕ Create VHD</button>
+                                <button class="toolbar-btn" id="attachVHDBtn">📎 Attach</button>
+                                <button class="toolbar-btn" id="detachVHDBtn">❌ Delete</button>
+                                <button class="toolbar-btn" id="resizeVHDBtn">📏 Resize</button>
+                                <button class="toolbar-btn" id="convertVHDBtn">🔄 Convert</button>
+                                <button class="toolbar-btn" id="compactVHDBtn">🗜 Compact</button>
+                                <button class="toolbar-btn" id="refreshVHDBtn">🔄 Refresh</button>
+                            </div>
+                            <div class="vhd-list-container">
+                                <table class="vhd-table" id="vhdTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Path</th>
+                                            <th>Size (GB)</th>
+                                            <th>Used (GB)</th>
+                                            <th>Type</th>
+                                            <th>VM</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vhdTableBody">
+                                        <!-- VHD rows will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- VM Stores Tab -->
+                        <div class="storage-tab-content hidden" id="vmstoresTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="addVMStoreBtn">➕ Add Store</button>
+                                <button class="toolbar-btn" id="removeVMStoreBtn">❌ Remove</button>
+                                <button class="toolbar-btn" id="migrateVMStoreBtn">📦 Migrate</button>
+                                <button class="toolbar-btn" id="refreshVMStoresBtn">🔄 Refresh</button>
+                            </div>
+                            <div class="vm-stores-container" id="vmStoresList">
+                                <!-- VM storage locations will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Checkpoints Tab -->
+                        <div class="storage-tab-content hidden" id="checkpointsTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="cleanupCheckpointsBtn">🧹 Cleanup</button>
+                                <button class="toolbar-btn" id="mergeCheckpointsBtn">🔀 Merge</button>
+                                <button class="toolbar-btn" id="exportCheckpointBtn">📤 Export</button>
+                                <button class="toolbar-btn" id="refreshCheckpointsBtn">🔄 Refresh</button>
+                            </div>
+                            <div class="checkpoints-container" id="checkpointsList">
+                                <!-- Checkpoint storage info will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- ISO Library Tab -->
+                        <div class="storage-tab-content hidden" id="isoTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="addISOBtn">➕ Add ISO</button>
+                                <button class="toolbar-btn" id="downloadISOBtn">⬇ Download</button>
+                                <button class="toolbar-btn" id="removeISOBtn">🗑 Remove</button>
+                                <button class="toolbar-btn" id="refreshISOBtn">🔄 Refresh</button>
+                            </div>
+                            <div class="iso-library-path">
+                                <label>ISO Library Path: </label>
+                                <input type="text" id="isoLibraryPath" value="C:\ISOs" readonly>
+                                <button class="toolbar-btn" id="changeISOPathBtn">📁 Change</button>
+                            </div>
+                            <div class="iso-grid" id="isoGrid">
+                                <!-- ISO files will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Storage QoS Tab -->
+                        <div class="storage-tab-content hidden" id="qosTab">
+                            <div class="storage-toolbar">
+                                <button class="toolbar-btn" id="createQosPolicyBtn">➕ Create Policy</button>
+                                <button class="toolbar-btn" id="editQosPolicyBtn">✏ Edit Policy</button>
+                                <button class="toolbar-btn" id="deleteQosPolicyBtn">🗑 Delete</button>
+                                <button class="toolbar-btn" id="refreshQosBtn">🔄 Refresh</button>
+                            </div>
+                            <div class="qos-container" id="qosPoliciesList">
+                                <!-- QoS policies will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Assistant View -->
+                <div class="content-view hidden" id="aiView">
+                    <div class="ai-container">
+                        <!-- AI Header -->
+                        <div class="ai-header">
+                            <div class="ai-title">
+                                <span class="ai-icon">⚡</span>
+                                <span>AI Assistant</span>
+                            </div>
+                            <div class="ai-status" id="aiStatus">
+                                <span class="status-dot"></span>
+                                <span>Ready</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Display -->
+                        <div class="chat-display" id="chatDisplay">
+                            <div class="ai-welcome">
+                                <div class="welcome-icon">🤖</div>
+                                <h3>Welcome to CoreLayer AI Assistant</h3>
+                                <p>I can help you manage your Hyper-V environment. Try commands like:</p>
+                                <ul>
+                                    <li><strong>"Start VM TestServer"</strong> - Start a virtual machine</li>
+                                    <li><strong>"List all VMs"</strong> - See all virtual machines</li>
+                                    <li><strong>"Show cluster status"</strong> - Check cluster health</li>
+                                    <li><strong>"Live migrate VM WebServer"</strong> - Migrate a VM</li>
+                                    <li><strong>"List cluster nodes"</strong> - See cluster nodes</li>
+                                    <li><strong>"Show host info"</strong> - View host details</li>
+                                    <li><strong>"Go to clustering"</strong> - Open cluster management</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input Area -->
+                        <div class="chat-input-container">
+                            <textarea class="chat-input" id="chatInput" placeholder="Ask AI to manage VMs, storage, or get help..." rows="2"></textarea>
+                            <div class="chat-buttons">
+                                <button class="chat-clear-btn" id="chatClearBtn" title="Clear chat">🗑️</button>
+                                <button class="chat-send-btn" id="chatSendBtn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clustering View -->
+                <div class="content-view hidden" id="clusteringView">
+                    <h2>Clustering Management</h2>
+                    
+                    <!-- Clustering Tabs -->
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="clusterManagement">Cluster Management</button>
+                        <button class="tab-btn" data-tab="migrations">Migrations</button>
+                        <button class="tab-btn" data-tab="nodeConfig">Nodes Configuration</button>
+                        <button class="tab-btn" data-tab="hostClustering">Host Clustering</button>
+                    </div>
+                    
+                    <!-- Cluster Management Tab -->
+                    <div class="tab-content active" id="clusterManagementTab">
+                        <div class="toolbar">
+                            <button class="toolbar-btn" id="createClusterBtn">➕ Create Cluster</button>
+                            <button class="toolbar-btn" id="addNodeBtn">➕ Add Node</button>
+                            <button class="toolbar-btn" id="removeNodeBtn">➖ Remove Node</button>
+                            <button class="toolbar-btn" id="clusterStatusBtn">📊 Cluster Status</button>
+                            <button class="toolbar-btn" id="clusterSettingsBtn">⚙️ Cluster Settings</button>
+                            <button class="toolbar-btn" id="clusterValidationBtn">🔍 Validate Cluster</button>
+                            <button class="toolbar-btn" id="clusterReportsBtn">📋 Cluster Reports</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Nodes</th>
+                                        <th>Resources</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clusterTableBody">
+                                    <tr><td colspan="6" style="text-align: center; color: #8a8a8d;">No clusters found</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Migrations Tab -->
+                    <div class="tab-content hidden" id="migrationsTab">
+                        <div class="toolbar">
+                            <button class="toolbar-btn" id="liveMigrateBtn">🔄 Live Migration</button>
+                            <button class="toolbar-btn" id="quickMigrateBtn">⚡ Quick Migration</button>
+                            <button class="toolbar-btn" id="storageMigrateBtn">💾 Storage Migration</button>
+                            <button class="toolbar-btn" id="migrationStatusBtn">📋 Migration Status</button>
+                            <button class="toolbar-btn" id="scheduledMigrateBtn">📅 Scheduled Migration</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>VM Name</th>
+                                        <th>Source</th>
+                                        <th>Destination</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                        <th>Start Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="migrationTableBody">
+                                    <tr><td colspan="7" style="text-align: center; color: #8a8a8d;">No migrations found</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Nodes Configuration Tab -->
+                    <div class="tab-content hidden" id="nodeConfigTab">
+                        <div class="toolbar">
+                            <button class="toolbar-btn" id="nodeConfigBtn">🔧 Node Configuration</button>
+                            <button class="toolbar-btn" id="networkConfigBtn">🌐 Network Setup</button>
+                            <button class="toolbar-btn" id="storageConfigBtn">🗄️ Storage Configuration</button>
+                            <button class="toolbar-btn" id="resourceConfigBtn">📈 Resource Allocation</button>
+                            <button class="toolbar-btn" id="nodeMonitoringBtn">👁️ Node Monitoring</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Node Name</th>
+                                        <th>Status</th>
+                                        <th>CPU</th>
+                                        <th>Memory</th>
+                                        <th>Storage</th>
+                                        <th>Uptime</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nodeTableBody">
+                                    <tr><td colspan="7" style="text-align: center; color: #8a8a8d;">No nodes found</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Host Clustering Tab -->
+                    <div class="tab-content hidden" id="hostClusteringTab">
+                        <div class="toolbar">
+                            <button class="toolbar-btn" id="enableClusteringBtn">✅ Enable Clustering</button>
+                            <button class="toolbar-btn" id="disableClusteringBtn">❌ Disable Clustering</button>
+                            <button class="toolbar-btn" id="clusterBackupBtn">💾 Cluster Backup</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Host Name</th>
+                                        <th>Status</th>
+                                        <th>Role</th>
+                                        <th>Cluster</th>
+                                        <th>Version</th>
+                                        <th>Features</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hostTableBody">
+                                    <tr><td colspan="7" style="text-align: center; color: #8a8a8d;">No hosts found</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div class="content-view hidden" id="settingsView">
+                    <div class="settings-container">
+                        <div class="settings-sidebar">
+                            <button class="settings-nav-btn active" data-settings-tab="general">
+                                <span class="settings-nav-icon">🏠</span>
+                                General
+                            </button>
+                            <button class="settings-nav-btn" data-settings-tab="hyperv">
+                                <span class="settings-nav-icon">🔷</span>
+                                Hyper-V
+                            </button>
+                            <button class="settings-nav-btn" data-settings-tab="ai">
+                                <span class="settings-nav-icon">⚡</span>
+                                AI Engine
+                            </button>
+                            <button class="settings-nav-btn" data-settings-tab="appearance">
+                                <span class="settings-nav-icon">🎨</span>
+                                Appearance
+                            </button>
+                            <button class="settings-nav-btn" data-settings-tab="about">
+                                <span class="settings-nav-icon">ℹ️</span>
+                                About
+                            </button>
+                        </div>
+                        
+                        <div class="settings-content">
+                            <!-- General Settings -->
+                            <div class="settings-panel active" id="generalSettingsPanel">
+                                <h2 class="settings-title">General Settings</h2>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">Startup</h3>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Launch at Windows startup</span>
+                                            <span class="settings-option-desc">Automatically start CoreLayer when Windows boots</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingAutoStart">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Start minimized</span>
+                                            <span class="settings-option-desc">Launch application in system tray</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingStartMinimized">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">Behavior</h3>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Confirm before VM actions</span>
+                                            <span class="settings-option-desc">Show confirmation dialogs for start/stop/delete operations</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingConfirmActions" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Auto-refresh dashboard</span>
+                                            <span class="settings-option-desc">Automatically refresh stats and VM status</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingAutoRefresh" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Refresh interval (seconds)</span>
+                                            <span class="settings-option-desc">How often to refresh dashboard data</span>
+                                        </div>
+                                        <select class="settings-select" id="settingRefreshInterval">
+                                            <option value="5">5 seconds</option>
+                                            <option value="10" selected>10 seconds</option>
+                                            <option value="30">30 seconds</option>
+                                            <option value="60">60 seconds</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hyper-V Settings -->
+                            <div class="settings-panel" id="hypervSettingsPanel">
+                                <h2 class="settings-title">Hyper-V Settings</h2>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">Default Paths</h3>
+                                    <div class="settings-option vertical">
+                                        <span class="settings-option-label">Default VM Location</span>
+                                        <div class="settings-path-input">
+                                            <input type="text" class="settings-input" id="settingVMPath" value="C:\ProgramData\Microsoft\Windows\Hyper-V">
+                                            <button class="settings-browse-btn" id="browseVMPath">📁</button>
+                                        </div>
+                                    </div>
+                                    <div class="settings-option vertical">
+                                        <span class="settings-option-label">Default VHD Location</span>
+                                        <div class="settings-path-input">
+                                            <input type="text" class="settings-input" id="settingVHDPath" value="C:\ProgramData\Microsoft\Windows\Virtual Hard Disks">
+                                            <button class="settings-browse-btn" id="browseVHDPath">📁</button>
+                                        </div>
+                                    </div>
+                                    <div class="settings-option vertical">
+                                        <span class="settings-option-label">ISO Library Path</span>
+                                        <div class="settings-path-input">
+                                            <input type="text" class="settings-input" id="settingISOPath" value="C:\ISOs">
+                                            <button class="settings-browse-btn" id="browseISOPath">📁</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">VM Defaults</h3>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Default Memory (MB)</span>
+                                        </div>
+                                        <select class="settings-select" id="settingDefaultMemory">
+                                            <option value="1024">1024 MB</option>
+                                            <option value="2048" selected>2048 MB</option>
+                                            <option value="4096">4096 MB</option>
+                                            <option value="8192">8192 MB</option>
+                                        </select>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Default vCPUs</span>
+                                        </div>
+                                        <select class="settings-select" id="settingDefaultCPUs">
+                                            <option value="1">1 vCPU</option>
+                                            <option value="2" selected>2 vCPUs</option>
+                                            <option value="4">4 vCPUs</option>
+                                            <option value="8">8 vCPUs</option>
+                                        </select>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Default Disk Size (GB)</span>
+                                        </div>
+                                        <select class="settings-select" id="settingDefaultDisk">
+                                            <option value="25">25 GB</option>
+                                            <option value="50" selected>50 GB</option>
+                                            <option value="100">100 GB</option>
+                                            <option value="250">250 GB</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Settings -->
+                            <div class="settings-panel" id="aiSettingsPanel">
+                                <h2 class="settings-title">AI Engine Settings</h2>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">Ollama Configuration</h3>
+                                    <div class="settings-option vertical">
+                                        <span class="settings-option-label">Ollama Server URL</span>
+                                        <input type="text" class="settings-input" id="settingOllamaURL" value="http://localhost:11434">
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">AI Model</span>
+                                            <span class="settings-option-desc">Select which model to use for AI assistance</span>
+                                        </div>
+                                        <select class="settings-select" id="settingAIModel">
+                                            <option value="llama3" selected>Llama 3</option>
+                                            <option value="llama3:70b">Llama 3 70B</option>
+                                            <option value="mistral">Mistral</option>
+                                            <option value="codellama">Code Llama</option>
+                                            <option value="phi3">Phi-3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">AI Behavior</h3>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Enable AI Assistant</span>
+                                            <span class="settings-option-desc">Use AI for VM management suggestions</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingAIEnabled" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Auto-execute commands</span>
+                                            <span class="settings-option-desc">Allow AI to execute PowerShell commands automatically</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingAIAutoExecute" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Connection Status</span>
+                                        </div>
+                                        <div class="settings-status" id="aiConnectionStatus">
+                                            <span class="status-indicator checking"></span>
+                                            <span>Checking...</span>
+                                        </div>
+                                    </div>
+                                    <button class="settings-btn" id="testAIConnection">Test Connection</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Appearance Settings -->
+                            <div class="settings-panel" id="appearanceSettingsPanel">
+                                <h2 class="settings-title">Appearance</h2>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">Mode</h3>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Dark Mode</span>
+                                            <span class="settings-option-desc">Toggle between dark and light mode</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingDarkMode" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">Custom Colors</h3>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Accent Color</span>
+                                            <span class="settings-option-desc">Choose your custom accent color</span>
+                                        </div>
+                                        <input type="color" class="settings-color" id="settingAccentColor" value="#00d9ff">
+                                    </div>
+                                    <div class="color-presets">
+                                        <span class="color-preset-label">Quick presets:</span>
+                                        <div class="color-preset-buttons">
+                                            <button class="color-preset" data-color="#00d9ff" style="background: #00d9ff" title="Cyan"></button>
+                                            <button class="color-preset" data-color="#4d88ff" style="background: #4d88ff" title="Blue"></button>
+                                            <button class="color-preset" data-color="#b366ff" style="background: #b366ff" title="Purple"></button>
+                                            <button class="color-preset" data-color="#00ff88" style="background: #00ff88" title="Green"></button>
+                                            <button class="color-preset" data-color="#ff6b6b" style="background: #ff6b6b" title="Red"></button>
+                                            <button class="color-preset" data-color="#ffaa00" style="background: #ffaa00" title="Orange"></button>
+                                            <button class="color-preset" data-color="#ff66b2" style="background: #ff66b2" title="Pink"></button>
+                                            <button class="color-preset" data-color="#ffffff" style="background: #ffffff" title="White"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-section">
+                                    <h3 class="settings-section-title">Display</h3>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Show animations</span>
+                                            <span class="settings-option-desc">Enable UI animations and transitions</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingAnimations" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-option">
+                                        <div class="settings-option-info">
+                                            <span class="settings-option-label">Compact mode</span>
+                                            <span class="settings-option-desc">Use smaller UI elements for more content</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="settingCompactMode">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- About Panel -->
+                            <div class="settings-panel" id="aboutSettingsPanel">
+                                <h2 class="settings-title">About CoreLayer</h2>
+                                
+                                <div class="about-content">
+                                    <div class="about-logo">
+                                        <img id="aboutLogoImg" class="about-logo-img" alt="CoreLayer">
+                                    </div>
+                                    <h3 class="about-name">CoreLayer</h3>
+                                    <p class="about-tagline">AI Powered Hypervisor</p>
+                                    <p class="about-version">Version 2.0.0</p>
+                                    
+                                    <div class="about-info">
+                                        <div class="about-info-row">
+                                            <span class="about-info-label">Build:</span>
+                                            <span class="about-info-value">2026.01.04</span>
+                                        </div>
+                                        <div class="about-info-row">
+                                            <span class="about-info-label">Platform:</span>
+                                            <span class="about-info-value">Windows / Electron</span>
+                                        </div>
+                                        <div class="about-info-row">
+                                            <span class="about-info-label">AI Backend:</span>
+                                            <span class="about-info-value">Ollama (Local)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="about-links">
+                                        <button class="about-link-btn" id="checkUpdatesBtn">🔄 Check for Updates</button>
+                                        <button class="about-link-btn" id="viewLogsBtn">📝 View Logs</button>
+                                    </div>
+                                    
+                                    <p class="about-copyright">© 2026 CoreLayer. All rights reserved.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Save Settings Button -->
+                    <div class="settings-footer">
+                        <button class="settings-save-btn" id="saveSettingsBtn">💾 Save Settings</button>
+                        <button class="settings-reset-btn" id="resetSettingsBtn">Reset to Defaults</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Panel (VMware-style) -->
+    <div class="tasks-panel" id="tasksPanel">
+        <div class="tasks-header" id="tasksHeader">
+            <div class="tasks-header-left">
+                <span class="tasks-icon">📋</span>
+                <span class="tasks-title">Recent Tasks</span>
+                <span class="tasks-count" id="tasksCount">0</span>
+            </div>
+            <div class="tasks-header-right">
+                <button class="tasks-clear-btn" id="tasksClearBtn" title="Clear completed tasks">Clear</button>
+                <button class="tasks-toggle-btn" id="tasksToggleBtn">▼</button>
+            </div>
+        </div>
+        <div class="tasks-body" id="tasksBody">
+            <div class="tasks-list" id="tasksList">
+                <!-- Tasks will be inserted here -->
+                <div class="tasks-empty" id="tasksEmpty">
+                    <span class="tasks-empty-icon">✓</span>
+                    <span>No recent tasks</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VM Creation Dialog -->
+    <div class="dialog-overlay hidden" id="createVMDialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>Create New Virtual Machine</h2>
+                <button class="dialog-close" id="closeCreateVM">✕</button>
+            </div>
+            <div class="dialog-content">
+                <div class="form-group">
+                    <label>VM Name:</label>
+                    <input type="text" id="vmName" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>OS Type:</label>
+                    <select id="vmOSType" class="form-input">
+                        <option>Windows Server 2022</option>
+                        <option>Windows Server 2019</option>
+                        <option>Windows 11</option>
+                        <option>Windows 10</option>
+                        <option>Ubuntu</option>
+                        <option>Debian</option>
+                        <option>CentOS</option>
+                        <option>Red Hat Enterprise Linux</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Memory (MB): <span id="memoryLabel">2048</span></label>
+                    <input type="range" id="vmMemory" min="512" max="16384" step="512" value="2048" class="form-range">
+                </div>
+                <div class="form-group">
+                    <label>CPUs:</label>
+                    <input type="number" id="vmCPUs" min="1" max="8" value="2" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Disk Size (GB): <span id="diskLabel">25</span></label>
+                    <input type="range" id="vmDisk" min="10" max="500" step="5" value="25" class="form-range">
+                </div>
+                <div class="form-group">
+                    <label>Storage Location:</label>
+                    <select id="vmStorageLocation" class="form-input">
+                        <option value="default">Default Location</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Attach ISO (optional):</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="vmISO" placeholder="Path to ISO..." class="form-input" style="flex: 1;">
+                        <button id="browseISOButton" class="dialog-btn">Browse...</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="vmNetwork" checked> Enable Network
+                    </label>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn dialog-btn-cancel" id="cancelCreateVM">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" id="confirmCreateVM">Create VM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create VHD Dialog -->
+    <div class="dialog-overlay hidden" id="createVHDDialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>Create Virtual Hard Disk</h2>
+                <button class="dialog-close" id="closeCreateVHD">✕</button>
+            </div>
+            <div class="dialog-content">
+                <div class="form-group">
+                    <label>VHD Name:</label>
+                    <input type="text" id="vhdName" class="form-input" placeholder="MyDisk.vhdx">
+                </div>
+                <div class="form-group">
+                    <label>Path:</label>
+                    <input type="text" id="vhdPath" class="form-input" value="C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\">
+                </div>
+                <div class="form-group">
+                    <label>Type:</label>
+                    <select id="vhdType" class="form-input">
+                        <option value="Dynamic">Dynamic (Thin Provisioned)</option>
+                        <option value="Fixed">Fixed Size</option>
+                        <option value="Differencing">Differencing</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Format:</label>
+                    <select id="vhdFormat" class="form-input">
+                        <option value="VHDX">VHDX (Recommended)</option>
+                        <option value="VHD">VHD (Legacy)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Size (GB): <span id="vhdSizeLabel">50</span></label>
+                    <input type="range" id="vhdSize" min="1" max="2048" step="1" value="50" class="form-range">
+                </div>
+                <div class="form-group">
+                    <label>Block Size:</label>
+                    <select id="vhdBlockSize" class="form-input">
+                        <option value="1MB">1 MB</option>
+                        <option value="2MB" selected>2 MB (Recommended)</option>
+                        <option value="32MB">32 MB</option>
+                        <option value="64MB">64 MB</option>
+                    </select>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn dialog-btn-cancel" id="cancelCreateVHD">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" id="confirmCreateVHD">Create VHD</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit VM Dialog -->
+    <div class="dialog-overlay hidden" id="editVMDialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>Edit Virtual Machine</h2>
+                <button class="dialog-close" id="closeEditVM">✕</button>
+            </div>
+            <div class="dialog-content">
+                <div class="form-group">
+                    <label>VM Name:</label>
+                    <input type="text" id="editVMName" class="form-input" readonly style="background: #1a1f26;">
+                </div>
+                <div class="form-group">
+                    <label>CPU Count:</label>
+                    <input type="number" id="editVMCPUs" min="1" max="64" value="2" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Memory (MB): <span id="editVMMemoryLabel">2048</span></label>
+                    <input type="range" id="editVMMemory" min="512" max="65536" step="512" value="2048" class="form-range">
+                </div>
+                <div class="form-group">
+                    <label>Auto-Start Action:</label>
+                    <select id="editVMAutoStart" class="form-input">
+                        <option value="Nothing">Nothing (default)</option>
+                        <option value="Start">Start automatically</option>
+                        <option value="StartIfRunning">Start if previously running</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ISO Image:</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="editVMISO" class="form-input" style="flex: 1;" placeholder="No ISO attached">
+                        <button class="dialog-btn" id="browseEditVMISO" style="padding: 8px 12px;">📁</button>
+                        <button class="dialog-btn" id="clearEditVMISO" style="padding: 8px 12px;" title="Remove ISO">✕</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes:</label>
+                    <textarea id="editVMNotes" class="form-input" rows="3" placeholder="Add notes about this VM..."></textarea>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn dialog-btn-cancel" id="cancelEditVM">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" id="confirmEditVM">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Snapshot Management Dialog -->
+    <div class="dialog-overlay hidden" id="snapshotDialog">
+        <div class="dialog" style="min-width: 450px;">
+            <div class="dialog-header">
+                <h2>Snapshot Management</h2>
+                <button class="dialog-close" id="closeSnapshotDialog">✕</button>
+            </div>
+            <div class="dialog-content">
+                <div class="form-group">
+                    <label>VM: <span id="snapshotVMName" style="color: #00d9ff;"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>Action:</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="dialog-btn" id="snapshotCreateBtn" style="flex: 1; min-width: 100px;">➕ Create</button>
+                        <button class="dialog-btn" id="snapshotApplyBtn" style="flex: 1; min-width: 100px;">↩ Apply</button>
+                        <button class="dialog-btn" id="snapshotDeleteBtn" style="flex: 1; min-width: 100px;">🗑 Delete</button>
+                    </div>
+                </div>
+                <div class="form-group" id="snapshotNameGroup" style="display: none;">
+                    <label>Snapshot Name:</label>
+                    <input type="text" id="snapshotNameInput" class="form-input" placeholder="Enter snapshot name...">
+                </div>
+                <div class="form-group">
+                    <label>Existing Snapshots:</label>
+                    <div id="snapshotListContainer" style="max-height: 200px; overflow-y: auto; background: #0f1419; border-radius: 8px; padding: 8px;">
+                        <div style="color: #666; text-align: center; padding: 20px;">Loading snapshots...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn dialog-btn-cancel" id="cancelSnapshotDialog">Close</button>
+                <button class="dialog-btn dialog-btn-primary" id="confirmSnapshotAction" style="display: none;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
