@@ -3,6 +3,12 @@ This is a specially designed Hyper-V Integration Tool that allows for Ai Automat
 
 <img width="1536" height="1024" alt="LoadImage" src="https://github.com/user-attachments/assets/c7cc0204-fdb4-4e87-b811-45230da661e0" />
 
+# ⚠️ LICENSE & USAGE NOTICE
+© 2026 CoreLayer. All Rights Reserved.
+This repository is publicly visible for **evaluation and demonstration purposes only**.
+❌ Copying, modifying, redistributing, or using this software in any commercial
+or production environment is strictly prohibited without explicit written permission.
+By viewing this repository, you agree to these terms.
 
 ## 🔧 CRITICAL BUG FIXES IMPLEMENTED
 
@@ -124,8 +130,6 @@ const jsonMatch = jsonStr.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
    - Set IOPS limits
    - Monitor storage performance
    - Apply policies to VHDs
-
-## 🚀 INSTALLATION INSTRUCTIONS
 
 ### Prerequisites
 - Windows 10/11 or Windows Server 2016+
