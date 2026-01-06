@@ -38,6 +38,11 @@ const jsonMatch = jsonStr.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
 
 ## 📸 SCREENSHOTS ## 
 
+## About Page ##
+
+<img width="1692" height="1090" alt="About" src="https://github.com/user-attachments/assets/bf2044f3-036a-4ca8-b75f-c70cb5879af2" />
+
+---
 # Dashboard #
 <img width="2068" height="1506" alt="Dashboard" src="https://github.com/user-attachments/assets/0c6b615e-d8d0-471f-9f6a-0b3c17ed3783" />
 
