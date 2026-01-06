@@ -1,4 +1,14 @@
 {
+  "_notice": {
+    "copyright": "© 2026 CoreLayer",
+    "rights": "All Rights Reserved.",
+    "usage": "Evaluation purposes only.",
+    "restriction": "Copying, modification, redistribution, or commercial use is strictly prohibited without prior written permission."
+  }
+}
+
+
+{
   "name": "corelayer-ai-hypervisor",
   "version": "2.0.0",
   "description": "CoreLayer AI HyperVisor - Hyper-V Management with AI Assistant",
