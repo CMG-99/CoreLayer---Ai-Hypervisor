@@ -227,5 +227,3 @@ MIT License - See LICENSE file for details
 - UI components inspired by modern dashboard designs
 
 ---
-
-**Note:** This enhanced version includes all requested bug fixes and storage management features. The VM parsing issue has been thoroughly addressed with multiple fallback mechanisms to ensure reliability.
