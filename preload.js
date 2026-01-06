@@ -1,3 +1,10 @@
+/*
+ * © 2026 CoreLayer
+ * All Rights Reserved.
+ *
+ * Unauthorized copying, modification, or use is prohibited.
+ */
+
 /**
  * Preload Script - Security Bridge
  * 
@@ -249,3 +256,4 @@ contextBridge.exposeInMainWorld('secureUtils', {
 });
 
 console.log('Preload script loaded - Security bridge initialized');
+
