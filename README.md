@@ -48,6 +48,7 @@ const jsonMatch = jsonStr.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
 
 ---
 # Ai Chat Deployment #
+<img width="2058" height="1237" alt="AI Chat Bot" src="https://github.com/user-attachments/assets/7b1db8b6-9de6-4ebf-9cc4-8ad195fa8073" />
 <img width="2066" height="1506" alt="AI Chat Deployment" src="https://github.com/user-attachments/assets/5d2b806a-8928-4921-8f64-09fa227c22df" />
 
 ---
