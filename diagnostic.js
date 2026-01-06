@@ -1,3 +1,10 @@
+/*
+ * © 2026 CoreLayer
+ * All Rights Reserved.
+ *
+ * Unauthorized copying, modification, or use is prohibited.
+ */
+
 // Diagnostic version of refreshVMs to identify the exact issue
 async function refreshVMsDiagnostic() {
     const tbody = document.getElementById('vmTableBody');
