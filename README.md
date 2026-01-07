@@ -42,6 +42,25 @@ const jsonMatch = jsonStr.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
 - Added double-click functionality to connect to VMs directly
 - Improved VMConnect integration
 
+### 🔐 SECURITY UPDATES (AI COMMUNICATION HARDENING)
+Summary of Security Changes
+
+The AI assistant communication layer has been re-architected to improve isolation, reduce attack surface, and prevent unintended access to local AI services.
+
+Key security enhancements include:
+
+AI communication is now fully isolated from the UI layer
+
+Sensitive connection details are never exposed to the user-facing context
+
+All AI requests are routed through a controlled, validated internal boundary
+
+Message size limits and validation are enforced before processing
+
+Direct access paths between the UI and local AI services have been removed
+
+
+
 ## 📸 SCREENSHOTS ## 
 
 ## About Page ##
